@@ -9,10 +9,10 @@ export function Home() {
       <section className="grid items-center gap-10 pt-6 lg:grid-cols-[1.05fr_0.95fr] lg:pt-10">
         <div className="fade-in">
 
-          <h1 className="font-[family-name:var(--font-display)] text-5xl leading-[1.05] text-ink sm:text-6xl lg:text-7xl">
+          <h1 className="font-[family-name:var(--font-display)] text-4xl leading-[1.05] text-ink sm:text-5xl lg:text-6xl">
             Little Letters
           </h1>
-          <p className="mt-4 max-w-md font-[family-name:var(--font-display)] text-2xl italic text-ink-soft">
+          <p className="mt-4 max-w-md font-[family-name:var(--font-display)] text-lg italic text-ink-soft sm:text-xl">
             Send someone a quiet moment
           </p>
           <p className="mt-5 max-w-lg text-ink-soft">

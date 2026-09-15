@@ -94,16 +94,16 @@ export function Viewer() {
 
   return (
     <div className="mx-auto flex max-w-4xl flex-col items-center px-5 pb-16 pt-4">
-      <p className="fade-in mb-8 font-[family-name:var(--font-display)] text-2xl italic text-ink-soft">
+      <p className="fade-in mb-6 font-[family-name:var(--font-display)] text-lg italic text-ink-soft sm:text-2xl">
         For {postcard.to || 'you'}, from {postcard.from || 'someone who cares'}
       </p>
       
-      <div className="relative w-full max-w-[560px] fade-in">
-        {/* Soft magical glow behind the postcard to make it pop and feel less dull */}
-        <div className="pointer-events-none absolute -inset-6 -z-10 rounded-[20px] bg-gradient-to-tr from-[#c9a66b]/30 to-[#d4a59a]/30 blur-2xl opacity-70"></div>
+      <div className="relative w-full max-w-[560px] fade-in overflow-hidden rounded-2xl">
+        {/* Soft glow behind the postcard */}
+        <div className="pointer-events-none absolute inset-0 -z-10 rounded-2xl bg-gradient-to-tr from-[#c9a66b]/25 to-[#d4a59a]/25 blur-xl opacity-80"></div>
         
         <div ref={cardRef} className="relative w-full">
-          <FlippablePostcard data={postcard} />
+          <FlippablePostcard data={postcard} startFlipped />
         </div>
       </div>
       <div className="mt-10 flex flex-wrap justify-center gap-3">

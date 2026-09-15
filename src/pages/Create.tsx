@@ -30,13 +30,13 @@ export function Create() {
   return (
     <div className="mx-auto grid max-w-6xl gap-10 px-5 pb-16 lg:grid-cols-[0.92fr_1.08fr]">
       <section className="fade-in rounded-[28px] bg-white/45 p-6 shadow-[0_20px_50px_-32px_rgba(45,42,38,0.35)] backdrop-blur-sm">
-        <h1 className="font-[family-name:var(--font-display)] text-4xl text-ink">Write a postcard</h1>
+        <h1 className="font-[family-name:var(--font-display)] text-3xl text-ink sm:text-4xl">Write a postcard</h1>
 
         <div className="mt-6 grid gap-5 sm:grid-cols-2">
           <label className="block">
             <span className="text-[11px] tracking-[0.2em] text-ink-soft uppercase">To</span>
             <input
-              className="field mt-1 border-b border-ink/20 pb-1 font-[family-name:var(--font-script)] text-xl"
+              className="field mt-1 border-b border-ink/20 pb-1 font-[family-name:var(--font-script)] text-lg sm:text-xl"
               value={data.to}
               onChange={(e) => update({ to: e.target.value })}
               placeholder="a dear someone"
@@ -46,7 +46,7 @@ export function Create() {
           <label className="block">
             <span className="text-[11px] tracking-[0.2em] text-ink-soft uppercase">From</span>
             <input
-              className="field mt-1 border-b border-ink/20 pb-1 font-[family-name:var(--font-script)] text-xl"
+              className="field mt-1 border-b border-ink/20 pb-1 font-[family-name:var(--font-script)] text-lg sm:text-xl"
               value={data.from}
               onChange={(e) => update({ from: e.target.value })}
               placeholder="your name"

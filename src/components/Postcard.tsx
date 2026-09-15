@@ -28,7 +28,7 @@ export function Postcard({
   const style = { '--tilt': `${tilt}deg`, transform: `rotate(${tilt}deg)` } as CSSProperties
   const size = compact
     ? 'aspect-[1.5/1] w-full max-w-[340px]'
-    : 'aspect-[1.55/1] w-full max-w-[560px]'
+    : 'w-full max-w-[560px] min-h-[220px] sm:aspect-[1.55/1]'
 
   return (
     <article
@@ -60,10 +60,14 @@ function Front({ data, compact }: { data: PostcardData; compact: boolean }) {
 
 function Back({ data, compact }: { data: PostcardData; compact: boolean }) {
   return (
-    <div className={`relative z-10 grid h-full grid-cols-[1.15fr_0.85fr] ${compact ? 'gap-3 p-3' : 'gap-4 p-5'}`}>
-      <div className="flex min-h-0 flex-col pr-3 md:pr-4">
+    <div className={`relative z-10 flex h-full flex-col ${compact ? 'gap-3 p-3' : 'gap-4 p-5'} sm:grid sm:grid-cols-[1.15fr_0.85fr]`}>
+      {/* On mobile: stamp sits top-right; on sm+ the right column holds it */}
+      <div className={`flex min-h-0 flex-col pr-0 sm:pr-4 ${compact ? '' : 'order-2 sm:order-1'}`}>
+        <div className="flex sm:hidden justify-end mb-2">
+          <Stamp accent={data.accent} />
+        </div>
         <p
-          className={`message-text min-h-0 flex-1 overflow-hidden ${compact ? 'text-[0.85rem]' : 'text-[1rem] md:text-[1.05rem]'}`}
+          className={`message-text ${compact ? 'text-[0.85rem]' : 'text-[0.95rem] sm:text-[1rem] md:text-[1.05rem]'}`}
         >
           {data.message || 'Your words will rest here, like a note tucked into a book…'}
         </p>
@@ -71,11 +75,19 @@ function Back({ data, compact }: { data: PostcardData; compact: boolean }) {
           — {data.from || 'Someone who thought of you'}
         </p>
       </div>
-      <div className="flex min-h-0 flex-col">
+      <div className={`hidden sm:flex min-h-0 flex-col order-2`}>
         <div className="flex justify-end">
           <Stamp accent={data.accent} />
         </div>
         <div className="mt-4 space-y-3">
+          <AddressLine label="To" value={data.to || '—'} />
+          <AddressLine label="From" value={data.from || '—'} />
+        </div>
+      </div>
+      {/* Mobile-only address block below message */}
+      <div className={`flex sm:hidden items-end justify-between ${compact ? '' : 'order-3'}`}>
+        <div />
+        <div className="space-y-2 text-right">
           <AddressLine label="To" value={data.to || '—'} />
           <AddressLine label="From" value={data.from || '—'} />
         </div>
@@ -110,12 +122,14 @@ export function FlippablePostcard({
   data,
   tilt = -1,
   className = '',
+  startFlipped = false,
 }: {
   data: PostcardData
   tilt?: number
   className?: string
+  startFlipped?: boolean
 }) {
-  const [flipped, setFlipped] = useState(false)
+  const [flipped, setFlipped] = useState(startFlipped)
   return (
     <div className={`flip-scene cursor-pointer ${className}`} onClick={() => setFlipped(!flipped)}>
       <div className={`flip-card ${flipped ? 'is-flipped' : ''}`}>
