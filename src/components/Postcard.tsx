@@ -26,9 +26,10 @@ export function Postcard({
   compact = false,
 }: PostcardProps) {
   const style = { '--tilt': `${tilt}deg`, transform: `rotate(${tilt}deg)` } as CSSProperties
+  // Always enforce aspect ratio so the card is never clipped on mobile
   const size = compact
-    ? 'aspect-[1.5/1] w-full max-w-[340px]'
-    : 'w-full max-w-[560px] min-h-[220px] sm:aspect-[1.55/1]'
+    ? 'aspect-[3/2] w-full max-w-[340px]'
+    : 'aspect-[3/2] w-full max-w-[560px]'
 
   return (
     <article
@@ -59,37 +60,30 @@ function Front({ data, compact }: { data: PostcardData; compact: boolean }) {
 }
 
 function Back({ data, compact }: { data: PostcardData; compact: boolean }) {
+  const pad = compact ? 'p-3' : 'p-4 sm:p-5'
+  const msgSize = compact ? 'text-[0.75rem]' : 'text-[0.82rem] sm:text-[1rem]'
+
   return (
-    <div className={`relative z-10 flex h-full flex-col ${compact ? 'gap-3 p-3' : 'gap-4 p-5'} sm:grid sm:grid-cols-[1.15fr_0.85fr]`}>
-      {/* On mobile: stamp sits top-right; on sm+ the right column holds it */}
-      <div className={`flex min-h-0 flex-col pr-0 sm:pr-4 ${compact ? '' : 'order-2 sm:order-1'}`}>
-        <div className="flex sm:hidden justify-end mb-2">
-          <Stamp accent={data.accent} />
-        </div>
-        <p
-          className={`message-text ${compact ? 'text-[0.85rem]' : 'text-[0.95rem] sm:text-[1rem] md:text-[1.05rem]'}`}
-        >
+    // Two-column layout at all sizes: left = message, right = stamp + address
+    <div className={`relative z-10 grid h-full grid-cols-[1.2fr_0.8fr] ${pad} gap-3 sm:gap-4`}>
+      {/* Left: message + from */}
+      <div className="flex min-h-0 flex-col justify-between overflow-hidden">
+        <p className={`message-text ${msgSize} line-clamp-6 sm:line-clamp-none`}>
           {data.message || 'Your words will rest here, like a note tucked into a book…'}
         </p>
-        <p className="mt-2 font-[family-name:var(--font-script)] text-sm">
+        <p className={`font-[family-name:var(--font-script)] ${compact ? 'text-[0.7rem]' : 'text-[0.78rem] sm:text-sm'} mt-1`}>
           — {data.from || 'Someone who thought of you'}
         </p>
       </div>
-      <div className={`hidden sm:flex min-h-0 flex-col order-2`}>
+
+      {/* Right: stamp top, address bottom */}
+      <div className="flex flex-col justify-between">
         <div className="flex justify-end">
           <Stamp accent={data.accent} />
         </div>
-        <div className="mt-4 space-y-3">
-          <AddressLine label="To" value={data.to || '—'} />
-          <AddressLine label="From" value={data.from || '—'} />
-        </div>
-      </div>
-      {/* Mobile-only address block below message */}
-      <div className={`flex sm:hidden items-end justify-between ${compact ? '' : 'order-3'}`}>
-        <div />
         <div className="space-y-2 text-right">
-          <AddressLine label="To" value={data.to || '—'} />
-          <AddressLine label="From" value={data.from || '—'} />
+          <AddressLine label="To" value={data.to || '—'} compact={compact} />
+          <AddressLine label="From" value={data.from || '—'} compact={compact} />
         </div>
       </div>
     </div>
@@ -107,9 +101,9 @@ function AddressLine({
 }) {
   return (
     <div>
-      <p className="text-[10px] tracking-[0.2em] text-ink-soft/70 uppercase">{label}</p>
+      <p className="text-[9px] tracking-[0.2em] text-ink-soft/70 uppercase">{label}</p>
       <p
-        className={`font-[family-name:var(--font-script)] ${compact ? 'text-xs' : 'text-base'}`}
+        className={`font-[family-name:var(--font-script)] truncate ${compact ? 'text-[0.65rem]' : 'text-[0.72rem] sm:text-sm'}`}
       >
         {value}
       </p>
