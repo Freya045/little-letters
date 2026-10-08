@@ -1,5 +1,5 @@
 import html2canvas from 'html2canvas'
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
 import { FlippablePostcard } from '../components/Postcard'
 import { decodePostcard } from '../lib/encode'
@@ -34,12 +34,39 @@ function fromQuery(params: URLSearchParams): PostcardData | null {
 }
 
 export function Viewer() {
-  const { payload } = useParams()
+  const { payload, shortId } = useParams<{ payload?: string; shortId?: string }>()
   const [search] = useSearchParams()
   const cardRef = useRef<HTMLDivElement>(null)
   const [downloadError, setDownloadError] = useState('')
 
+  // State for short-ID lookups (/p/:shortId route)
+  const [shortData, setShortData] = useState<PostcardData | null>(null)
+  const [shortLoading, setShortLoading] = useState(false)
+  const [shortError, setShortError] = useState(false)
+
+  useEffect(() => {
+    if (!shortId) return
+    setShortLoading(true)
+    setShortError(false)
+    fetch(`/api/load?id=${encodeURIComponent(shortId)}`)
+      .then((r) => {
+        if (!r.ok) throw new Error('not found')
+        return r.json() as Promise<PostcardData>
+      })
+      .then((data) => {
+        setShortData(data)
+        setShortLoading(false)
+      })
+      .catch(() => {
+        setShortError(true)
+        setShortLoading(false)
+      })
+  }, [shortId])
+
   const postcard = useMemo(() => {
+    // Short-ID route: data comes from state fetched from API
+    if (shortId) return shortData
+
     const hash = window.location.hash.replace(/^#/, '')
     if (hash) {
       const decoded = decodePostcard(hash)
@@ -53,7 +80,7 @@ export function Viewer() {
     if (fromParams) return fromParams
     if (search.get('sample') === '1') return SAMPLE_POSTCARDS[0]
     return null
-  }, [payload, search])
+  }, [payload, shortId, shortData, search])
 
 
 
@@ -73,6 +100,31 @@ export function Viewer() {
     } catch {
       setDownloadError('The postcard could not be saved as an image just now.')
     }
+  }
+
+  if (shortLoading) {
+    return (
+      <div className="mx-auto max-w-lg px-5 py-20 text-center fade-in">
+        <p className="text-ink-soft">Opening your postcard…</p>
+      </div>
+    )
+  }
+
+  if (shortError) {
+    return (
+      <div className="mx-auto max-w-lg px-5 py-20 text-center fade-in">
+        <h1 className="font-[family-name:var(--font-display)] text-4xl">This note went missing</h1>
+        <p className="mt-3 text-ink-soft">
+          The link may have expired. Postcards are kept as long as the server is warm.
+        </p>
+        <Link
+          to="/create"
+          className="mt-8 inline-block rounded-full bg-[#c9a66b] px-6 py-3 text-sm text-ink"
+        >
+          Send your own
+        </Link>
+      </div>
+    )
   }
 
   if (!postcard) {

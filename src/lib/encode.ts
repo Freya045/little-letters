@@ -51,3 +51,25 @@ export function postcardShareUrl(data: PostcardData): string {
   const encoded = encodePostcard(data)
   return `${window.location.origin}/postcard#${encoded}`
 }
+
+/**
+ * POSTs the postcard to /api/shorten, which stores it server-side
+ * and returns a 6-char alphanumeric ID.
+ * Returns a short URL like /p/Ab3xK2 on success, or the long hash URL as fallback.
+ */
+export async function savePostcard(data: PostcardData): Promise<string> {
+  try {
+    const res = await fetch('/api/shorten', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    })
+    if (!res.ok) throw new Error('API error')
+    const json = (await res.json()) as { id?: string }
+    if (!json.id) throw new Error('No ID returned')
+    return `${window.location.origin}/p/${json.id}`
+  } catch {
+    // Fallback: encode everything in the URL the old way
+    return postcardShareUrl(data)
+  }
+}

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { FlippablePostcard, Postcard } from '../components/Postcard'
-import { postcardShareUrl } from '../lib/encode'
+import { savePostcard } from '../lib/encode'
 import { ACCENTS, BACKGROUNDS, createEmptyPostcard } from '../lib/postcard'
 import type { PostcardData } from '../types'
 
@@ -9,6 +9,7 @@ export function Create() {
   const [status, setStatus] = useState('')
   const [shareUrl, setShareUrl] = useState('')
   const [previewOpen, setPreviewOpen] = useState(false)
+  const [shortening, setShortening] = useState(false)
 
   const update = (patch: Partial<PostcardData>) => {
     setData((prev) => ({ ...prev, ...patch }))
@@ -16,9 +17,13 @@ export function Create() {
     setStatus('')
   }
 
-  const generateLink = () => {
-    const url = postcardShareUrl(data)
+  const generateLink = async () => {
+    setShortening(true)
+    setShareUrl('')
+    setStatus('Saving postcard…')
+    const url = await savePostcard(data)
     setShareUrl(url)
+    setShortening(false)
     void navigator.clipboard.writeText(url).then(
       () => setStatus('Link copied — share it like a sealed envelope.'),
       () => setStatus('Link ready. Copy it from the box below.'),
@@ -110,10 +115,11 @@ export function Create() {
         <div className="mt-8 flex flex-wrap gap-3">
           <button
             type="button"
-            onClick={generateLink}
-            className="rounded-full bg-[#c9a66b] px-5 py-2.5 text-sm text-ink"
+            onClick={() => void generateLink()}
+            disabled={shortening}
+            className="rounded-full bg-[#c9a66b] px-5 py-2.5 text-sm text-ink disabled:opacity-60"
           >
-            Generate Link
+            {shortening ? 'Shortening…' : 'Generate Link'}
           </button>
           <button
             type="button"

@@ -15,6 +15,7 @@ export default function App() {
             <Route path="/create" element={<Create />} />
             <Route path="/postcard/:payload" element={<Viewer />} />
             <Route path="/postcard" element={<Viewer />} />
+            <Route path="/p/:shortId" element={<Viewer />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Route>
         </Routes>
