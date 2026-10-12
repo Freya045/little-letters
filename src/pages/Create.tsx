@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { FlippablePostcard, Postcard } from '../components/Postcard'
-import { savePostcard } from '../lib/encode'
+import { postcardShareUrl } from '../lib/encode'
 import { ACCENTS, BACKGROUNDS, createEmptyPostcard } from '../lib/postcard'
 import type { PostcardData } from '../types'
 
@@ -9,7 +9,7 @@ export function Create() {
   const [status, setStatus] = useState('')
   const [shareUrl, setShareUrl] = useState('')
   const [previewOpen, setPreviewOpen] = useState(false)
-  const [shortening, setShortening] = useState(false)
+  const [copying, setCopying] = useState(false)
 
   const update = (patch: Partial<PostcardData>) => {
     setData((prev) => ({ ...prev, ...patch }))
@@ -18,16 +18,35 @@ export function Create() {
   }
 
   const generateLink = async () => {
-    setShortening(true)
-    setShareUrl('')
-    setStatus('Saving postcard…')
-    const url = await savePostcard(data)
-    setShareUrl(url)
-    setShortening(false)
-    void navigator.clipboard.writeText(url).then(
-      () => setStatus('Link copied — share it like a sealed envelope.'),
-      () => setStatus('Link ready. Copy it from the box below.'),
-    )
+    setCopying(true)
+    setStatus('Generating link…')
+
+    const longUrl = postcardShareUrl(data)
+    let urlToCopy = longUrl
+
+    try {
+      const res = await fetch(
+        `https://tinyurl.com/api-create.php?url=${encodeURIComponent(longUrl)}`,
+      )
+      if (!res.ok) throw new Error('TinyURL API error')
+      const short = await res.text()
+      if (short.startsWith('http')) {
+        urlToCopy = short.trim()
+      }
+    } catch {
+      // TinyURL failed — fall back to the full URL silently
+    }
+
+    setShareUrl(urlToCopy)
+
+    try {
+      await navigator.clipboard.writeText(urlToCopy)
+      setStatus('Link copied — share it like a sealed envelope.')
+    } catch {
+      setStatus('Link ready. Copy it from the box below.')
+    } finally {
+      setCopying(false)
+    }
   }
 
 
@@ -116,10 +135,10 @@ export function Create() {
           <button
             type="button"
             onClick={() => void generateLink()}
-            disabled={shortening}
+            disabled={copying}
             className="rounded-full bg-[#c9a66b] px-5 py-2.5 text-sm text-ink disabled:opacity-60"
           >
-            {shortening ? 'Shortening…' : 'Generate Link'}
+            {copying ? 'Copying…' : 'Generate Link'}
           </button>
           <button
             type="button"
