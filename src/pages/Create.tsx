@@ -24,24 +24,20 @@ export function Create() {
     const longUrl = postcardShareUrl(data)
     let urlToCopy = longUrl
 
-    // Try is.gd first — it allows browser-side CORS requests (unlike TinyURL)
-    const shorteners = [
-      `https://is.gd/create.php?format=simple&url=${encodeURIComponent(longUrl)}`,
-      `https://v.gd/create.php?format=simple&url=${encodeURIComponent(longUrl)}`,
-    ]
-
-    for (const endpoint of shorteners) {
-      try {
-        const res = await fetch(endpoint)
-        if (!res.ok) continue
+    try {
+      const res = await fetch('/api/shorten', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ longUrl }),
+      })
+      if (res.ok) {
         const short = (await res.text()).trim()
         if (short.startsWith('http')) {
           urlToCopy = short
-          break
         }
-      } catch {
-        // try next shortener
       }
+    } catch {
+      // silently fall back to the original longUrl
     }
 
     setShareUrl(urlToCopy)
